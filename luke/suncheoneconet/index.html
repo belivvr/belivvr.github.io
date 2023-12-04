@@ -1,45 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebAR Floor Detection with Photo Capture</title>
-    <!-- Include A-Frame and AR.js with floor detection -->
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://rawgit.com/donmccurdy/aframe-extras/v6.0.0/dist/aframe-extras.min.js"></script>
+    <title>WebAR App</title>
+    <style>
+        /* Basic CSS for the camera button */
+        #cameraButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 12px; /* Rounded corners */
+            cursor: pointer;
+        }
+    </style>
 </head>
-<body style="margin: 0; overflow: hidden;">
-    <!-- AR scene -->
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-        <!-- 3D Model -->
-        <a-gltf-model src="./Cat.glb" scale="0.1 0.1 0.1" position="0 0 0"></a-gltf-model>
+<body>
+    <!-- Placeholder for AR content -->
+    <div id="arContent">
+        <!-- AR content goes here -->
+    </div>
 
-        <!-- Camera -->
-        <a-entity camera look-controls wasd-controls></a-entity>
-
-        <!-- Floor detection extras -->
-        <a-plane position="0 0 0" rotation="0 0 0" width="10" height="10" color="#333" opacity="0.5" extra-floor></a-plane>
-
-        <!-- Photo capture button -->
-        <button onclick="capturePhoto()">Capture Photo</button>
-    </a-scene>
+    <!-- Camera button -->
+    <button id="cameraButton">Take Photo</button>
 
     <script>
-        function capturePhoto() {
-            // Get the AR scene element
-            const arScene = document.querySelector('a-scene');
+        // JavaScript to detect if the user is in a webview and prompt to open in a browser
+        window.onload = function() {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            if (/FBAN|FBAV|KAKAOTALK/i.test(userAgent)) {
+                alert("Please open this page in a browser such as Chrome for the best experience.");
+            }
 
-            // Capture a photo and save it
-            arScene.components.screenshot.capture('perspective').then((dataURL) => {
-                // Create a link element to download the photo
-                const link = document.createElement('a');
-                link.href = dataURL;
-                link.download = 'ar_photo.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
+            // Additional JavaScript for AR functionality and camera button will go here
         }
     </script>
 </body>
