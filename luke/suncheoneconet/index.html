@@ -1,103 +1,196 @@
-<!DOCTYPE html>
+<!doctype html>
+<!--
+Copyright 2018 The Immersive Web Community Group
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
 <html>
-<head>
-    <title>WebAR App</title>
-    <!-- viewport 메타 태그 추가 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <link rel='icon' type='image/png' sizes='32x32' href='favicon-32x32.png'>
+    <link rel='icon' type='image/png' sizes='96x96' href='favicon-96x96.png'>
+    <link rel='stylesheet' href='css/common.css'>
 
+    <title>Immersive AR Session</title>
+  </head>
+  <body>
+    <header>
+      <details open>
+        <summary>Immersive AR Session</summary>
+        <p>
+          This sample demonstrates how to use an 'immersive-ar' XRSession to
+          present a simple WebGL scene to a transparent or passthrough XR
+          device. The logic is largely the same as the corresponding VR sample,
+          with the primary difference being that no background is rendered and
+          the model is scaled down for easier viewing in a real-world space.
+          <a class="back" href="./">Back</a>
+        </p>
+      </details>
+    </header>
+    <script type="module">
+      import {WebXRButton} from './js/util/webxr-button.js';
+      import {Scene} from './js/render/scenes/scene.js';
+      import {Renderer, createWebGLContext} from './js/render/core/renderer.js';
+      import {SkyboxNode} from './js/render/nodes/skybox.js';
+      import {InlineViewerHelper} from './js/util/inline-viewer-helper.js';
+      import {Gltf2Node} from './js/render/nodes/gltf2.js';
+      import {QueryArgs} from './js/util/query-args.js';
 
-    <style>
-        /* Basic CSS for the camera button */
-        #cameraButton {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #4CAF50; /* Green */
-            border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            border-radius: 12px; /* Rounded corners */
-            cursor: pointer;
-        }
-          #arCanvas {
-            display: none; /* 초기에는 숨김 */
-        }
-    </style>
-     
-     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://ar-js-org.github.io/AR.js/aframe/build/aframe-ar.js"></script>
-</head>
-    
-</head>
-<body>
-    <!-- Placeholder for AR content -->
-    <div id="arContent">
-     <!-- A-Frame AR 씬 설정 -->
-         <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;'>
-            <!-- 마커 기반 앵커 설정 -->
-            <a-marker preset="hiro">
-                <a-entity gltf-model="https://belivvr.github.io/luke/suncheoneconet/armodel/Cat.glb" scale="1.6 1.6 1.6"></a-entity>
-            </a-marker>
-            <a-entity camera></a-entity>
-        </a-scene>
-        
-    </div>
+      // If requested, use the polyfill to provide support for mobile devices
+      // and devices which only support WebVR.
+      import WebXRPolyfill from './js/third-party/webxr-polyfill/build/webxr-polyfill.module.js';
+      if (QueryArgs.getBool('usePolyfill', true)) {
+        let polyfill = new WebXRPolyfill();
+      }
 
-    <!-- Camera button -->
-    <button id="cameraButton">Take Photo</button>
+      // XR globals.
+      let xrButton = null;
+      let xrImmersiveRefSpace = null;
+      let inlineViewerHelper = null;
 
-    <canvas id="arCanvas"></canvas>
+      // WebGL scene globals.
+      let gl = null;
+      let renderer = null;
+      let scene = new Scene();
+      let solarSystem = new GlbNode({url: 'https://belivvr.github.io/luke/suncheoneconet/armodel/Cat.glb'});
+      // The solar system is big (citation needed). Scale it down so that users
+      // can move around the planets more easily.
+      solarSystem.scale = [0.1, 0.1, 0.1];
+      scene.addNode(solarSystem);
+      // Still adding a skybox, but only for the benefit of the inline view.
+      let skybox = new SkyboxNode({url: 'media/textures/milky-way-4k.png'});
+      scene.addNode(skybox);
 
-    <script>
-        // JavaScript to detect if the user is in a webview and prompt to open in a browser
-        window.onload = function() {
-            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            if (/FBAN|FBAV|KAKAOTALK/i.test(userAgent)) {
-                alert("Please open this page in a browser such as Chrome for the best experience.");
-            }
-
-            // Additional JavaScript for AR functionality and camera button will go here
-        }
-
-
-         // 카메라 버튼 클릭 시 사진 촬영
-        document.getElementById('cameraButton').addEventListener('click', function() {
-            var scene = document.querySelector('a-scene');
-            if (scene && scene.components.screenshot) {
-                scene.components.screenshot.capture('perspective');
-            }
+      function initXR() {
+        xrButton = new WebXRButton({
+          onRequestSession: onRequestSession,
+          onEndSession: onEndSession,
+          textEnterXRTitle: "START AR",
+          textXRNotFoundTitle: "AR NOT FOUND",
+          textExitXRTitle: "EXIT  AR",
         });
+        document.querySelector('header').appendChild(xrButton.domElement);
 
-        // A-Frame 스크린샷 컴포넌트 추가
-        AFRAME.registerComponent('screenshot', {
-            init: function () {
-                var component = this;
-                this.el.addEventListener('loaded', function() {
-                    component.canvas = document.createElement('canvas');
-                    document.body.appendChild(component.canvas);
-                    component.canvas.id = 'arCanvas';
-                    component.canvas.width = window.innerWidth;
-                    component.canvas.height = window.innerHeight;
-                    component.context = component.canvas.getContext('2d');
-                });
-            },
-            capture: function (projection) {
-                var canvas = this.canvas;
-                var context = this.context;
-                var renderer = this.el.renderer;
-                var camera = this.el.camera.el.getObject3D('camera');
-                renderer.render(this.el.object3D, camera, canvas);
-                var dataURL = canvas.toDataURL('image/png');
-                var link = document.createElement('a');
-                link.download = 'ar-photo.png';
-                link.href = dataURL;
-                link.click();
-            }
+        if (navigator.xr) {
+          // Checks to ensure that 'immersive-ar' mode is available, and only
+          // enables the button if so.
+          navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+            xrButton.enabled = supported;
+          });
+
+          navigator.xr.requestSession('inline').then(onSessionStarted);
+        }
+      }
+
+      function onRequestSession() {
+        // Requests an 'immersive-ar' session, which ensures that the users
+        // environment will be visible either via video passthrough or a
+        // transparent display. This may be presented either in a headset or
+        // fullscreen on a mobile device.
+        return navigator.xr.requestSession('immersive-ar')
+            .then((session) => {
+              xrButton.setSession(session);
+              session.isImmersive = true;
+              onSessionStarted(session);
+            });
+      }
+
+      function initGL() {
+        if (gl)
+          return;
+
+        gl = createWebGLContext({
+          xrCompatible: true
         });
+        document.body.appendChild(gl.canvas);
+
+        function onResize() {
+          gl.canvas.width = gl.canvas.clientWidth * window.devicePixelRatio;
+          gl.canvas.height = gl.canvas.clientHeight * window.devicePixelRatio;
+        }
+        window.addEventListener('resize', onResize);
+        onResize();
+
+        renderer = new Renderer(gl);
+
+        scene.setRenderer(renderer);
+      }
+
+      function onSessionStarted(session) {
+        session.addEventListener('end', onSessionEnded);
+
+        if (session.isImmersive) {
+          // When in 'immersive-ar' mode don't draw an opaque background because
+          // we want the real world to show through.
+          skybox.visible = false;
+        }
+
+        initGL();
+
+        session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+        let refSpaceType = session.isImmersive ? 'local' : 'viewer';
+        session.requestReferenceSpace(refSpaceType).then((refSpace) => {
+          if (session.isImmersive) {
+            xrImmersiveRefSpace = refSpace;
+          } else {
+            inlineViewerHelper = new InlineViewerHelper(gl.canvas, refSpace);
+          }
+          session.requestAnimationFrame(onXRFrame);
+        });
+      }
+
+      function onEndSession(session) {
+        session.end();
+      }
+
+      function onSessionEnded(event) {
+        if (event.session.isImmersive) {
+          xrButton.setSession(null);
+          // Turn the background back on when we go back to the inlive view.
+          skybox.visible = true;
+        }
+      }
+
+      // Called every time a XRSession requests that a new frame be drawn.
+      function onXRFrame(t, frame) {
+        let session = frame.session;
+        let refSpace = session.isImmersive ?
+                         xrImmersiveRefSpace :
+                         inlineViewerHelper.referenceSpace;
+        let pose = frame.getViewerPose(refSpace);
+
+        scene.startFrame();
+
+        session.requestAnimationFrame(onXRFrame);
+
+        scene.drawXRFrame(frame, pose);
+
+        scene.endFrame();
+      }
+
+      // Start the XR application.
+      initXR();
     </script>
-</body>
+  </body>
 </html>
+
+
