@@ -23,6 +23,9 @@
             border-radius: 12px; /* Rounded corners */
             cursor: pointer;
         }
+          #arCanvas {
+            display: none; /* 초기에는 숨김 */
+        }
     </style>
      
      <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
@@ -34,15 +37,20 @@
     <!-- Placeholder for AR content -->
     <div id="arContent">
      <!-- A-Frame AR 씬 설정 -->
-        <a-scene embedded arjs>
-            <!-- GLB 모델 로드 및 크기 조정 -->
-            <a-entity gltf-model="https://belivvr.github.io/luke/suncheoneconet/armodel/Cat.glb" scale="1.6 1.6 1.6"></a-entity>
+         <a-scene embedded arjs='sourceType: webcam; debugUIEnabled: false;'>
+            <!-- 마커 기반 앵커 설정 -->
+            <a-marker preset="hiro">
+                <a-entity gltf-model="https://belivvr.github.io/luke/suncheoneconet/armodel/Cat.glb" scale="1.6 1.6 1.6"></a-entity>
+            </a-marker>
+            <a-entity camera></a-entity>
         </a-scene>
         
     </div>
 
     <!-- Camera button -->
     <button id="cameraButton">Take Photo</button>
+
+    <canvas id="arCanvas"></canvas>
 
     <script>
         // JavaScript to detect if the user is in a webview and prompt to open in a browser
@@ -54,6 +62,42 @@
 
             // Additional JavaScript for AR functionality and camera button will go here
         }
+
+
+         // 카메라 버튼 클릭 시 사진 촬영
+        document.getElementById('cameraButton').addEventListener('click', function() {
+            var scene = document.querySelector('a-scene');
+            if (scene && scene.components.screenshot) {
+                scene.components.screenshot.capture('perspective');
+            }
+        });
+
+        // A-Frame 스크린샷 컴포넌트 추가
+        AFRAME.registerComponent('screenshot', {
+            init: function () {
+                var component = this;
+                this.el.addEventListener('loaded', function() {
+                    component.canvas = document.createElement('canvas');
+                    document.body.appendChild(component.canvas);
+                    component.canvas.id = 'arCanvas';
+                    component.canvas.width = window.innerWidth;
+                    component.canvas.height = window.innerHeight;
+                    component.context = component.canvas.getContext('2d');
+                });
+            },
+            capture: function (projection) {
+                var canvas = this.canvas;
+                var context = this.context;
+                var renderer = this.el.renderer;
+                var camera = this.el.camera.el.getObject3D('camera');
+                renderer.render(this.el.object3D, camera, canvas);
+                var dataURL = canvas.toDataURL('image/png');
+                var link = document.createElement('a');
+                link.download = 'ar-photo.png';
+                link.href = dataURL;
+                link.click();
+            }
+        });
     </script>
 </body>
 </html>
