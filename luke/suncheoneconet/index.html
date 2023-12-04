@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>XR Spinosaurus</title>
+    <title>순천에코넷 AR캐릭터(고양이)</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -79,10 +79,7 @@
   <body>
 
     <a-scene>
-      <a-assets timeout="30000">
-        <!-- Model source: https://sketchfab.com/3d-models/spinosaurus-2135501583704537907645bf723685e7
-             Model author: https://sketchfab.com/VapTor
-             Model license: CC Attribution -->
+      <a-assets timeout="30000">     
         <a-asset-item id="spinosaurus" src="./armodel/Cat.glb" response-type="arraybuffer"></a-asset-item>
       </a-assets>
       
@@ -92,9 +89,9 @@
       <a-entity environment="preset: forest; lighting: none; shadow: none; lightPosition: 0 2.15 0"
                 hide-in-ar-mode></a-entity>
       
-      <a-entity id="dino" position="-1 0 -3" scale="0.5 0.5 0.5">
+      <a-entity id="character" position="-1 0 -3" scale="1 1 1">
         <a-entity position="0 2.15 0" rotation="0 55 0"
-                  gltf-model="#spinosaurus"
+                  gltf-model="#character"
                   animation-mixer
                   shadow="cast: true; receive: false"></a-entity>
       </a-entity>  
@@ -109,7 +106,7 @@
                       shadowCameraBottom: -5;
                       shadowCameraTop: 5;"
                id="light"
-               target="dino"
+               target="character"
                position="-5 3 1.5"></a-light>
 
       <!-- This shadow-receiving plane is only visible in AR mode. -->
@@ -121,11 +118,7 @@
 
     <div id="text">
       <h1>A-Frame Spinosaurus for VR/AR</h1>
-    
-      <p>
-        Model: <a href="https://sketchfab.com/3d-models/spinosaurus-2135501583704537907645bf723685e7">Spinosaurus</a> by 
-        <a href="https://sketchfab.com/VapTor">Vaptor-Studio</a>.
-      </p>
+         
       <p>
         Size: <button id="btn_full">Full</button>
         <button id="btn_half">1/2</button>
@@ -144,7 +137,7 @@
     </div>
     <script>
       function setSize(scale) {
-        document.getElementById('dino').setAttribute('scale', {x: scale, y: scale, z: scale});
+        document.getElementById('character').setAttribute('scale', {x: scale, y: scale, z: scale});
       }
       document.getElementById('btn_full').onclick = setSize.bind(this, 1);
       document.getElementById('btn_half').onclick = setSize.bind(this, 0.5);
