@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>순천에코넷 AR캐릭터(고양이)</title>
+    <title>XR Spinosaurus</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -78,9 +78,40 @@
   </head>  
   <body>
 
+    <a-scene arjs='sourceType: webcam; debugUIEnabled: false;' embedded>
+        <!-- ... assets and entities ... -->
+
+        <!-- Message for Unsupported Devices -->
+        <div id="unsupported-device-message" style="display: none;">
+            <p>Please connect through a smartphone that supports AR.</p>
+        </div>
+
+        <!-- Button to Take Picture -->
+        <button id="take-picture">Take Picture</button>
+    </a-scene>
+     <script>
+        // Check for AR Mode Support
+        document.addEventListener('DOMContentLoaded', function () {
+            if (AFRAME.utils.device.checkARSupport()) {
+                // AR is supported
+            } else {
+                // AR is not supported, show message
+                document.getElementById('unsupported-device-message').style.display = 'block';
+            }
+        });
+
+        // Function to Take Picture
+        document.getElementById('take-picture').addEventListener('click', function () {
+            // Implement functionality to capture screenshot in AR mode
+        });
+    </script>
+    
     <a-scene>
-      <a-assets timeout="30000">     
-        <a-asset-item id="spinosaurus" src="./armodel/Cat.glb" response-type="arraybuffer"></a-asset-item>
+      <a-assets timeout="30000">
+        <!-- Model source: https://sketchfab.com/3d-models/spinosaurus-2135501583704537907645bf723685e7
+             Model author: https://sketchfab.com/VapTor
+             Model license: CC Attribution -->
+        <a-asset-item id="spinosaurus" src="https://cdn.glitch.com/324a5290-5aa7-4efc-92d6-ae0736433b12%2Fspinosaurus.glb" response-type="arraybuffer"></a-asset-item>
       </a-assets>
       
       <a-camera position="0 1.2 0"></a-camera>
@@ -89,9 +120,9 @@
       <a-entity environment="preset: forest; lighting: none; shadow: none; lightPosition: 0 2.15 0"
                 hide-in-ar-mode></a-entity>
       
-      <a-entity id="character" position="-1 0 -3" scale="1 1 1">
+      <a-entity id="dino" position="-1 0 -3" scale="0.5 0.5 0.5">
         <a-entity position="0 2.15 0" rotation="0 55 0"
-                  gltf-model="#character"
+                  gltf-model="#spinosaurus"
                   animation-mixer
                   shadow="cast: true; receive: false"></a-entity>
       </a-entity>  
@@ -106,7 +137,7 @@
                       shadowCameraBottom: -5;
                       shadowCameraTop: 5;"
                id="light"
-               target="character"
+               target="dino"
                position="-5 3 1.5"></a-light>
 
       <!-- This shadow-receiving plane is only visible in AR mode. -->
@@ -118,7 +149,11 @@
 
     <div id="text">
       <h1>A-Frame Spinosaurus for VR/AR</h1>
-         
+    
+      <p>
+        Model: <a href="https://sketchfab.com/3d-models/spinosaurus-2135501583704537907645bf723685e7">Spinosaurus</a> by 
+        <a href="https://sketchfab.com/VapTor">Vaptor-Studio</a>.
+      </p>
       <p>
         Size: <button id="btn_full">Full</button>
         <button id="btn_half">1/2</button>
@@ -137,7 +172,7 @@
     </div>
     <script>
       function setSize(scale) {
-        document.getElementById('character').setAttribute('scale', {x: scale, y: scale, z: scale});
+        document.getElementById('dino').setAttribute('scale', {x: scale, y: scale, z: scale});
       }
       document.getElementById('btn_full').onclick = setSize.bind(this, 1);
       document.getElementById('btn_half').onclick = setSize.bind(this, 0.5);
