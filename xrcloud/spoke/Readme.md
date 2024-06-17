@@ -4,9 +4,9 @@ Terrain_Crater1.glb :  In XRCLOUD's Spoke, the default 3D model file used for ba
 This directory operates as a repository page where files required for the Spoke editor of XRCloud can be publicly accessed. This setup became necessary following the termination of Mozilla Hubs services and the deletion of assets from reticulum.io.
 We have copied and uploaded only the files needed for Spoke from the repository of https://hubsfoundation.org/.
 
-https://github.com/Hubs-Foundation/hubs-sound-pack
-https://github.com/Hubs-Foundation/hubs-architecture-kit
-https://github.com/Hubs-Foundation/hubs-rock-kit
+* https://github.com/Hubs-Foundation/hubs-sound-pack
+* https://github.com/Hubs-Foundation/hubs-architecture-kit
+* https://github.com/Hubs-Foundation/hubs-rock-kit
 
 --
 Terrain_Crater1.glb: XRCLOUD의 Spoke에서 기본적으로 배경으로 사용되는 3D 모델 파일은 주로 환경 모델입니다.
