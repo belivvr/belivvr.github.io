@@ -1,0 +1,24 @@
+[
+    {
+        "title": "클래스V 클래스룸",
+        "thumbnail": "https://room.vrcloud.app:4000/files/ab62f62b-b64e-4b3d-bd9d-e0d49a2d54c6",
+        "scenid": "XUSgpmt",
+        "description": "세미나나 강의를 위한 고급스러운 교실 공간입니다.",
+        "use": "강의실"
+    },
+    {
+        "title": "모던 컬러 갤러리",
+        "thumbnail": "https://room.vrcloud.app:4000/files/af4f25ea-440a-4f2d-9e7f-2a674e2b264a",
+        "scenid": "PDHbsAm",
+        "description": "현대적인 느낌의 갤러리 공간입니다.",
+        "use": "갤러리"
+    },
+    {
+        "title": "모던 컬러 소형 갤러리",
+        "thumbnail": "https://room.vrcloud.app:4000/files/abaaa8a1-6408-4e64-9ef4-df991d9d6ad1",
+        "scenid": "NPFN6JW",
+        "description": "현대적인 느낌의 작은 갤러리 공간입니다. (실은 설정입니다. 아직 막혀 있어요)",
+        "use": "갤러리"
+    }
+   
+]
